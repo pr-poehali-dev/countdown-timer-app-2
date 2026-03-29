@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TimerScreen from "@/components/TimerScreen";
 import ClientsScreen from "@/components/ClientsScreen";
 import HistoryScreen from "@/components/HistoryScreen";
@@ -46,38 +46,56 @@ const INITIAL_CLIENTS: Client[] = [
   { id: "3", name: "Мария Иванова", phone: "", balance: 200, rate: 600, color: "#FCA5A5" },
 ];
 
-const INITIAL_HISTORY: Session[] = [
-  {
-    id: "h1",
-    clientId: "1",
-    clientName: "Анна Смирнова",
-    startTime: new Date(Date.now() - 3600000 * 25),
-    endTime: new Date(Date.now() - 3600000 * 24),
-    duration: 3600,
-    cost: 500,
-  },
-  {
-    id: "h2",
-    clientId: "2",
-    clientName: "Дмитрий Козлов",
-    startTime: new Date(Date.now() - 3600000 * 5),
-    endTime: new Date(Date.now() - 3600000 * 3),
-    duration: 7200,
-    cost: 800,
-  },
-];
+const INITIAL_SETTINGS: AppSettings = {
+  warningMinutes: 10,
+  soundEnabled: true,
+  notificationsEnabled: true,
+};
+
+function load<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function loadHistory(): Session[] {
+  try {
+    const raw = localStorage.getItem("tt_history");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as Session[];
+    return parsed.map((s) => ({
+      ...s,
+      startTime: new Date(s.startTime),
+      endTime: new Date(s.endTime),
+    }));
+  } catch {
+    return [];
+  }
+}
 
 type Tab = "timer" | "clients" | "history" | "settings";
 
 export default function Index() {
   const [tab, setTab] = useState<Tab>("timer");
-  const [clients, setClients] = useState<Client[]>(INITIAL_CLIENTS);
-  const [history, setHistory] = useState<Session[]>(INITIAL_HISTORY);
-  const [settings, setSettings] = useState<AppSettings>({
-    warningMinutes: 10,
-    soundEnabled: true,
-    notificationsEnabled: true,
-  });
+  const [clients, setClients] = useState<Client[]>(() => load("tt_clients", INITIAL_CLIENTS));
+  const [history, setHistory] = useState<Session[]>(() => loadHistory());
+  const [settings, setSettings] = useState<AppSettings>(() => load("tt_settings", INITIAL_SETTINGS));
+
+  useEffect(() => {
+    localStorage.setItem("tt_clients", JSON.stringify(clients));
+  }, [clients]);
+
+  useEffect(() => {
+    localStorage.setItem("tt_history", JSON.stringify(history));
+  }, [history]);
+
+  useEffect(() => {
+    localStorage.setItem("tt_settings", JSON.stringify(settings));
+  }, [settings]);
 
   const addSession = (session: Session) => {
     setHistory((prev) => [session, ...prev]);
