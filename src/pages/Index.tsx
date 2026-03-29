@@ -30,6 +30,16 @@ export type AppSettings = {
   notificationsEnabled: boolean;
 };
 
+export type TimerState = {
+  clientId: string;
+  paidHours: number;
+  secondsLeft: number;
+  running: boolean;
+  paused: boolean;
+  startTime: Date | null;
+  warned: boolean;
+};
+
 const INITIAL_CLIENTS: Client[] = [
   { id: "1", name: "Анна Смирнова", phone: "+7 900 123-45-67", balance: 120, rate: 500, color: "#6EE7B7" },
   { id: "2", name: "Дмитрий Козлов", phone: "+7 911 234-56-78", balance: 45, rate: 400, color: "#93C5FD" },
