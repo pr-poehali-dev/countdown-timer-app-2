@@ -8,6 +8,7 @@ import Icon from "@/components/ui/icon";
 export type Client = {
   id: string;
   name: string;
+  phone: string;
   balance: number;
   rate: number;
   color: string;
@@ -30,9 +31,9 @@ export type AppSettings = {
 };
 
 const INITIAL_CLIENTS: Client[] = [
-  { id: "1", name: "Анна Смирнова", balance: 120, rate: 500, color: "#6EE7B7" },
-  { id: "2", name: "Дмитрий Козлов", balance: 45, rate: 400, color: "#93C5FD" },
-  { id: "3", name: "Мария Иванова", balance: 200, rate: 600, color: "#FCA5A5" },
+  { id: "1", name: "Анна Смирнова", phone: "+7 900 123-45-67", balance: 120, rate: 500, color: "#6EE7B7" },
+  { id: "2", name: "Дмитрий Козлов", phone: "+7 911 234-56-78", balance: 45, rate: 400, color: "#93C5FD" },
+  { id: "3", name: "Мария Иванова", phone: "", balance: 200, rate: 600, color: "#FCA5A5" },
 ];
 
 const INITIAL_HISTORY: Session[] = [

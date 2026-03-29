@@ -11,6 +11,7 @@ const COLORS = ["#6EE7B7", "#93C5FD", "#FCA5A5", "#FCD34D", "#C4B5FD", "#F9A8D4"
 
 const emptyClient = (): Omit<Client, "id"> => ({
   name: "",
+  phone: "",
   balance: 0,
   rate: 500,
   color: COLORS[0],
@@ -28,7 +29,7 @@ export default function ClientsScreen({ clients, setClients }: Props) {
   };
 
   const openEdit = (c: Client) => {
-    setForm({ name: c.name, balance: c.balance, rate: c.rate, color: c.color });
+    setForm({ name: c.name, phone: c.phone, balance: c.balance, rate: c.rate, color: c.color });
     setEditing(c);
     setAdding(true);
   };
@@ -85,7 +86,22 @@ export default function ClientsScreen({ clients, setClients }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-app-text truncate">{c.name}</p>
-                <p className="text-xs text-app-muted mt-0.5">{c.rate} ₽/час</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-xs text-app-muted">{c.rate} ₽/час</p>
+                  {c.phone && (
+                    <>
+                      <span className="text-app-border text-xs">·</span>
+                      <a
+                        href={`tel:${c.phone}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-app-muted hover:text-app-accent transition-colors flex items-center gap-1"
+                      >
+                        <Icon name="Phone" size={10} />
+                        {c.phone}
+                      </a>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="text-right flex-shrink-0">
                 <p
@@ -140,6 +156,17 @@ export default function ClientsScreen({ clients, setClients }: Props) {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Имя клиента"
+                className="w-full mt-1 bg-app-bg border border-app-border rounded-xl px-4 py-3 text-app-text placeholder:text-app-muted focus:outline-none focus:border-app-accent transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-app-muted uppercase tracking-wider">Телефон</label>
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                placeholder="+7 900 000-00-00"
                 className="w-full mt-1 bg-app-bg border border-app-border rounded-xl px-4 py-3 text-app-text placeholder:text-app-muted focus:outline-none focus:border-app-accent transition-colors"
               />
             </div>
