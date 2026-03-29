@@ -148,6 +148,16 @@ function TimerRow({
           <div className="min-w-0">
             <p className="text-sm font-medium text-app-text truncate leading-none">{client.name}</p>
             <p className="text-[11px] text-app-muted mt-0.5">{client.rate} ₽/ч</p>
+            {client.phone && (
+              <a
+                href={`tel:${client.phone}`}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1 text-[11px] text-app-muted hover:text-app-accent transition-colors mt-0.5"
+              >
+                <Icon name="Phone" size={10} />
+                {client.phone}
+              </a>
+            )}
           </div>
         </div>
       </td>
