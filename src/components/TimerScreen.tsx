@@ -17,12 +17,14 @@ export default function TimerScreen({ clients, settings, onSessionEnd }: Props) 
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [warned, setWarned] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const selectedClientRef = useRef<Client | null>(null);
+  selectedClientRef.current = selectedClient;
 
   const totalSeconds = paidHours * 3600;
   const elapsed = startTime ? totalSeconds - secondsLeft : 0;
   const progress = totalSeconds > 0 ? Math.min(1, elapsed / totalSeconds) : 0;
 
-  const playBeep = useCallback(() => {
+  const playBeep = useCallback((frequency = 880, duration = 0.8) => {
     if (!settings.soundEnabled) return;
     try {
       const ctx = new AudioContext();
@@ -30,15 +32,36 @@ export default function TimerScreen({ clients, settings, onSessionEnd }: Props) 
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.frequency.value = 880;
+      osc.frequency.value = frequency;
       gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
       osc.start();
-      osc.stop(ctx.currentTime + 0.8);
+      osc.stop(ctx.currentTime + duration);
     } catch (_e) {
       /* ignore */
     }
   }, [settings.soundEnabled]);
+
+  const announceExpired = useCallback((clientName: string) => {
+    if (!settings.soundEnabled) return;
+    // Три коротких сигнала
+    [0, 0.4, 0.8].forEach((delay) => {
+      setTimeout(() => playBeep(660, 0.25), delay * 1000);
+    });
+    // Голосовое объявление после сигналов
+    setTimeout(() => {
+      if ("speechSynthesis" in window) {
+        const utterance = new SpeechSynthesisUtterance(
+          `Время вышло. ${clientName}, пожалуйста, пополните счёт.`
+        );
+        utterance.lang = "ru-RU";
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utterance);
+      }
+    }, 1300);
+  }, [settings.soundEnabled, playBeep]);
 
   useEffect(() => {
     if (!running || paused) return;
@@ -47,7 +70,8 @@ export default function TimerScreen({ clients, settings, onSessionEnd }: Props) 
         if (s <= 1) {
           clearInterval(intervalRef.current!);
           setRunning(false);
-          playBeep();
+          const name = selectedClientRef.current?.name ?? "";
+          announceExpired(name);
           return 0;
         }
         const newVal = s - 1;
@@ -65,7 +89,7 @@ export default function TimerScreen({ clients, settings, onSessionEnd }: Props) 
       });
     }, 1000);
     return () => clearInterval(intervalRef.current!);
-  }, [running, paused, settings, warned, playBeep]);
+  }, [running, paused, settings, warned, playBeep, announceExpired]);
 
   const handleStart = () => {
     if (!selectedClient) return;
